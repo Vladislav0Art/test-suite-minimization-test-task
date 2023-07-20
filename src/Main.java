@@ -3,6 +3,8 @@ import java.util.*;
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
+    static private record Pair(int i, int t) {}
+
     private static int price(List<Map.Entry<String, Integer>> S, int index) {
         return S.get(index).getValue();
     }
@@ -18,76 +20,36 @@ public class Main {
         int sum = S.stream().map(Map.Entry::getValue).reduce(0, Integer::sum);
 
         int[][][] dp = new int[n][n + 1][2];
-        int[][][] path = new int[n][n + 1][2];
+        Pair[][][] path = new Pair[n][n + 1][2];
 
         // base
         dp[0][0][0] = dp[0][0][1] = 0;
-        path[0][0][0] = path[0][0][1] = -1;
+        path[0][0][0] = path[0][0][1] = new Pair(-1, -1);
 
         dp[0][1][1] = price(S, 0);
-        path[0][1][1] = -1;
+        path[0][1][1] = new Pair(-1, -1);
 
         for (int i = 1; i < n; ++i) {
             dp[i][0][0] = dp[i][0][1] = 0;
-            path[i][0][0] = path[i][0][1] = -1;
+            path[i][0][0] = path[i][0][1] = new Pair(-1, -1);
         }
 
         for (int i = 1; i < n; ++i) {
             for (int k = 1; k <= i + 1; ++k) {
-                // skip current item (t=0)
-
                 for (int t = 0; t <= 1; ++t) {
+
                     int p = price(S, i);
-                    for (int t0 = 0; t0 <= 1; ++t0) {
-                        int A = p * t + dp[i-1][k - t][t0];
-                        if (func(sum, dp[i][k][0]) < func(sum, A)) {
-                            dp[i][k][0] = A;
-                            path[i][k][0] = t0;
+                    for (int j = i - 1; j >= 0; --j) {
+                        for (int t0 = 0; t0 <= 1; ++t0) {
+                            int A = p * t + dp[j][k - t][t0];
+                            if (func(sum, dp[i][k][t]) < func(sum, A)) {
+                                dp[i][k][t] = A;
+                                path[i][k][t] = new Pair(j, t0);
+                            }
                         }
                     }
 
                 }
-
-                for (int t0 = 0; t0 <= 1; ++t0) {
-                    int A = dp[i-1][k][t0];
-                    if (func(sum, dp[i][k][0]) < func(sum, A)) {
-                        dp[i][k][0] = A;
-                        path[i][k][0] = t0;
-                    }
-                }
-                /*{
-                    int A0 = dp[i-1][k][0];
-                    int A1 = dp[i-1][k][1];
-
-                    if ((sum - A0) * A0 < (sum - A1) * A1) {
-                        dp[i][k][0] = A1;
-                        path[i][k][0] = 1;
-                    }
-                    else {
-                        dp[i][k][0] = A0;
-                        path[i][k][0] = 0;
-                    }
-                }*/
-
-                // take current item (t=1)
-                for (int t0 = 0; t0 <= 1; ++t0) {
-                    int A = p + dp[i-1][k-1][t0];
-                    if (func(sum, dp[i][k][1]) < func(sum, A)) {
-                        dp[i][k][0] = A;
-                        path[i][k][0] = t0;
-                    }
-                }
-                /*int A0 = p + dp[i-1][k-1][0];
-                int A1 = p + dp[i-1][k-1][1];
-
-                if ((sum - A0) * A0 < (sum - A1) * A1) {
-                    dp[i][k][1] = A1;
-                    path[i][k][1] = 1;
-                }
-                else {
-                    dp[i][k][1] = A0;
-                    path[i][k][1] = 0;
-                }*/
             }
         }
 
@@ -109,11 +71,14 @@ public class Main {
                 taken = true;
             }
 
-            t = path[i][k][t];
-            --i;
+            int newt = path[i][k][t].t;
+            int newi = path[i][k][t].i;
             if (taken) {
                 --k;
             }
+
+            t = newt;
+            i = newi;
         }
 
         // create set B
