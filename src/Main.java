@@ -37,11 +37,12 @@ public class Main {
         for (int i = 1; i < n; ++i) {
             for (int k = 1; k <= i + 1; ++k) {
                 for (int t = 0; t <= 1; ++t) {
-
                     int p = price(S, i);
-                    for (int j = i - 1; j >= 0; --j) {
+
+                    for (int j = i - t; j >= 0; --j) {
                         for (int t0 = 0; t0 <= 1; ++t0) {
                             int A = p * t + dp[j][k - t][t0];
+
                             if (func(sum, dp[i][k][t]) < func(sum, A)) {
                                 dp[i][k][t] = A;
                                 path[i][k][t] = new Pair(j, t0);

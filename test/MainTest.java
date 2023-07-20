@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -98,66 +99,103 @@ class MainTest {
 
     @Test
     void splitEvenNumberOfElements() {
-        Map<String, Integer> S = Map.ofEntries(
-                Map.entry("a", 10),
-                Map.entry("b", 23),
-                Map.entry("c", 4),
-                Map.entry("d", 1),
-                Map.entry("e", 15),
-                Map.entry("f", 7)
-        );
+        for (int iteration = 0; iteration < 1000; ++iteration) {
+            Map<String, Integer> S = Map.ofEntries(
+                    Map.entry("a", 10),
+                    Map.entry("b", 23),
+                    Map.entry("c", 4),
+                    Map.entry("d", 1),
+                    Map.entry("e", 15),
+                    Map.entry("f", 7)
+            );
 
-        List<Map<String, Integer>> actual = Main.split(S);
-        int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
+            List<Map<String, Integer>> actual = Main.split(S);
+            int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
 
-        assertNotNull(actual);
-        assertEquals(2, actual.size());
+            assertNotNull(actual);
+            assertEquals(2, actual.size());
 
-        Map<String, Integer> A = actual.get(0);
-        Map<String, Integer> B = actual.get(1);
+            Map<String, Integer> A = actual.get(0);
+            Map<String, Integer> B = actual.get(1);
 
-        assertEquals(S.size() / 2, A.size());
-        assertEquals(S.size() / 2, B.size());
+            assertEquals(S.size() / 2, A.size());
+            assertEquals(S.size() / 2, B.size());
 
-        List<Map<String, Integer>> expected = slowSolution(S);
-        int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
+            List<Map<String, Integer>> expected = slowSolution(S);
+            int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
 
-        assertEquals(expectedDiff, actualDiff);
+            assertEquals(expectedDiff, actualDiff);
+        }
     }
 
     @Test
     void splitOddNumberOfElements() {
-        Map<String, Integer> S = Map.ofEntries(
-                Map.entry("a", 10),
-                Map.entry("b", 23),
-                Map.entry("c", 4),
-                Map.entry("d", 1),
-                Map.entry("e", 15),
-                Map.entry("f", 7),
-                Map.entry("g", 27)
-        );
+        for (int iteration = 0; iteration < 1000; ++iteration) {
+            Map<String, Integer> S = Map.ofEntries(
+                    Map.entry("a", 10),
+                    Map.entry("b", 23),
+                    Map.entry("c", 4),
+                    Map.entry("d", 1),
+                    Map.entry("e", 15),
+                    Map.entry("f", 7),
+                    Map.entry("g", 27)
+            );
 
-        List<Map<String, Integer>> actual = Main.split(S);
-        int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
+            List<Map<String, Integer>> actual = Main.split(S);
+            int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
 
-        assertNotNull(actual);
-        assertEquals(2, actual.size());
+            assertNotNull(actual);
+            assertEquals(2, actual.size());
 
-        Map<String, Integer> A = actual.get(0);
-        Map<String, Integer> B = actual.get(1);
+            Map<String, Integer> A = actual.get(0);
+            Map<String, Integer> B = actual.get(1);
 
-        if (A.size() < B.size()) {
-            var tmp = B;
-            A = B;
-            B = tmp;
+            if (A.size() < B.size()) {
+                var tmp = A;
+                A = B;
+                B = tmp;
+            }
+
+            assertEquals(S.size() / 2 + 1, A.size());
+            assertEquals(S.size() / 2, B.size());
+
+            List<Map<String, Integer>> expected = slowSolution(S);
+            int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
+
+            assertEquals(expectedDiff, actualDiff);
         }
+    }
 
-        assertEquals(S.size() / 2 + 1, A.size());
-        assertEquals(S.size() / 2, B.size());
+    @Test
+    void splitStressTestEvenNumber() {
+        Random rnd = new Random();
 
-        List<Map<String, Integer>> expected = slowSolution(S);
-        int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
+        for (int iteration = 0; iteration < 10; ++iteration) {
+            int n = 2 * rnd.nextInt(1, 5);
+            Map<String, Integer> S = new HashMap<>();
 
-        assertEquals(expectedDiff, actualDiff);
+            for (int i = 0; i < n; ++i) {
+                S.put(Integer.toString(i), rnd.nextInt(1, 10));
+            }
+
+            System.out.println(S);
+
+            List<Map<String, Integer>> actual = Main.split(S);
+            int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
+
+            assertNotNull(actual);
+            assertEquals(2, actual.size());
+
+            Map<String, Integer> A = actual.get(0);
+            Map<String, Integer> B = actual.get(1);
+
+            assertEquals(S.size() / 2, A.size());
+            assertEquals(S.size() / 2, B.size());
+
+            List<Map<String, Integer>> expected = slowSolution(S);
+            int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
+
+            assertEquals(expectedDiff, actualDiff);
+        }
     }
 }
