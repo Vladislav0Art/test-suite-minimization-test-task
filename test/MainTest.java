@@ -124,4 +124,40 @@ class MainTest {
 
         assertEquals(expectedDiff, actualDiff);
     }
+
+    @Test
+    void splitOddNumberOfElements() {
+        Map<String, Integer> S = Map.ofEntries(
+                Map.entry("a", 10),
+                Map.entry("b", 23),
+                Map.entry("c", 4),
+                Map.entry("d", 1),
+                Map.entry("e", 15),
+                Map.entry("f", 7),
+                Map.entry("g", 27)
+        );
+
+        List<Map<String, Integer>> actual = Main.split(S);
+        int actualDiff = Math.abs(sum(actual.get(0)) - sum(actual.get(1)));
+
+        assertNotNull(actual);
+        assertEquals(2, actual.size());
+
+        Map<String, Integer> A = actual.get(0);
+        Map<String, Integer> B = actual.get(1);
+
+        if (A.size() < B.size()) {
+            var tmp = B;
+            A = B;
+            B = tmp;
+        }
+
+        assertEquals(S.size() / 2 + 1, A.size());
+        assertEquals(S.size() / 2, B.size());
+
+        List<Map<String, Integer>> expected = slowSolution(S);
+        int expectedDiff = Math.abs(sum(expected.get(0)) - sum(expected.get(1)));
+
+        assertEquals(expectedDiff, actualDiff);
+    }
 }
