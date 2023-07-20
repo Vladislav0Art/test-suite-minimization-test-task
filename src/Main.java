@@ -1,17 +1,97 @@
+import java.util.*;
+
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
-    public static void main(String[] args) {
-        // Press Alt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+    private static int price(List<Map.Entry<String, Integer>> S, int index) {
+        return S.get(index).getValue();
+    }
 
-        // Press Shift+F10 or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+    static List<Map<String, Integer>> split(Map<String, Integer> set) {
+        Objects.requireNonNull(set);
+        List<Map.Entry<String, Integer>> S = set.entrySet().stream().toList();
+        int n = S.size();
+        int sum = S.stream().map(Map.Entry::getValue).reduce(0, Integer::sum);
 
-            // Press Shift+F9 to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Ctrl+F8.
-            System.out.println("i = " + i);
+        int[][][] dp = new int[n][n + 1][2];
+        int[][][] path = new int[n][n + 1][2];
+
+        // base
+        dp[0][0][0] = dp[0][0][1] = 0;
+        path[0][0][0] = path[0][0][1] = -1;
+
+        dp[0][1][1] = price(S, 0);
+        path[0][1][1] = -1;
+
+        for (int i = 1; i < n; ++i) {
+            for (int k = 0; k <= i + 1; ++k) {
+                // skip current item (t=0)
+                {
+                    int A0 = dp[i-1][k][0];
+                    int A1 = dp[i-1][k][1];
+
+                    if ((sum - A0) * A0 < (sum - A1) * A1) {
+                        dp[i][k][0] = A1; // dp[i-1][k][1];
+                        path[i][k][0] = 1;
+                    }
+                    else {
+                        dp[i][k][0] = A0; // dp[i-1][k][0];
+                        path[i][k][0] = 0;
+                    }
+                }
+
+                // take current item (t=1)
+                if (k > 0) {
+                    int p = price(S, i);
+                    int A0 = p + dp[i-1][k-1][0];
+                    int A1 = p + dp[i-1][k-1][1];
+
+                    if ((sum - A0) * A0 < (sum - A1) * A1) {
+                        dp[i][k][1] = A1;
+                        path[i][k][1] = 1;
+                    }
+                    else {
+                        dp[i][k][1] = A0;
+                        path[i][k][1] = 0;
+                    }
+                }
+            }
         }
+
+        // retrieve answer
+        int i = n - 1;
+        int k = n / 2;
+
+        int A0 = dp[n-1][k][0];
+        int A1 = dp[n-1][k][1];
+
+        int t = ((sum - A0) * A0 < (sum - A1) * A1) ? 1 : 0;
+
+        Map<String, Integer> A = new HashMap<>();
+
+        while (k > 0) {
+            boolean taken = false;
+            if (t == 1) {
+                A.put(S.get(i).getKey(), S.get(i).getValue());
+                taken = true;
+            }
+
+            t = path[i][k][t];
+            --i;
+            if (taken) {
+                --k;
+            }
+        }
+
+        // create set B
+        Map<String, Integer> B = new HashMap<>();
+
+        for (var entry : set.entrySet()) {
+            if (!A.containsKey(entry.getKey())) {
+                B.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return List.of(A, B);
     }
 }
