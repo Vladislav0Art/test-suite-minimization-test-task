@@ -9,10 +9,15 @@ public class Main {
         return S.get(index).getValue();
     }
 
-    private static int func(int S, int x) {
-        return (S - x) * x;
-    }
-
+    /**
+     *
+     * @param dp - array with data
+     * @param n - size of 1st dim of `dp`
+     * @param totalSum - sum of all items of `S`
+     * @param k - require number of items
+     * @return best sum `s` of items in A such that
+    its |price(A) - price(B)| -> min and size(A) == k.
+     */
     private static int findBestSum(boolean[][][] dp, int n, int totalSum, int k) {
         int diff = -1;
         int selectedS = -1;
@@ -31,64 +36,84 @@ public class Main {
 
     static List<Map<String, Integer>> split(Map<String, Integer> set) {
         Objects.requireNonNull(set);
+
+        // construct list and retrieve size and total sum
         List<Map.Entry<String, Integer>> S = set.entrySet().stream().toList();
 
         int n = S.size();
         int s = S.stream().map(Map.Entry::getValue).reduce(0, Integer::sum);
 
-        boolean[][][] dp = new boolean[n][s + 1][n + 1];
-        Pair[][][] path = new Pair[n][s + 1][n + 1];
+        // init arrays and base cases
+        boolean[][][] dp = new boolean[n + 1][s + 1][n + 1];
+        Pair[][][] path = new Pair[n + 1][s + 1][n + 1];
 
         dp[0][0][0] = true;
         path[0][0][0] = new Pair(0, 0);
         dp[0][price(S, 0)][1] = true;
         path[0][price(S, 0)][1] = new Pair(0, 0);
 
-        for (int i = 1; i < n; ++i) {
+        // iterate over prefix i
+        for (int i = 0; i < n; ++i) {
             int p = price(S, i);
 
-            for (int j = s; j >= p; --j) {
+            // iterate over sum s (here call j)
+            for (int j = 0; j <= s - p; ++j) {
+                // if current sum j is 0 then update dp since sum of 0 could be collected via 0 items
                 if (j == 0) {
                     dp[i][j][0] = true;
                     path[i][j][0] = new Pair(0, 0);
                 }
 
-                for (int k = 1; k <= n; ++k) {
-                    // dp[i][j][k] |= (dp[i-1][j][k] || dp[i-1][j-p][k-1]);
-                    if (dp[i-1][j][k]) {
-                        dp[i][j][k] = true;
-                        path[i][j][k] = new Pair(j, k);
-                    }
-                    else if (dp[i-1][j-p][k-1]) {
-                        dp[i][j][k] = true;
-                        path[i][j][k] = new Pair(j-p, k-1);
+                // iterate over number of items of set A
+                for (int k = 0; k < n; ++k) {
+                    // if current state is reachable then update state
+                    // that could be reached without i-th item and state
+                    // that could be reach with i-th item
+                    if (dp[i][j][k]) {
+                        dp[i+1][j][k] = true;
+                        path[i+1][j][k] = new Pair(j, k);
+
+                        dp[i+1][j+p][k+1] = true;
+                        path[i+1][j+p][k+1] = new Pair(j, k);
                     }
                 }
             }
         }
 
+        // construct answer
         Map<String, Integer> A = new HashMap<>();
         Map<String, Integer> B = new HashMap<>();
 
-        int i = n - 1;
+        int i = n;
         int k = n / 2;
+        // find sum of items of set A so that |price(A) - price(B)| -> min
+        // and size of A is k
         int j = findBestSum(dp, n, s, k);
 
+        // collect all items into set A
         while(k > 0) {
-            boolean currentItemSelected = (path[i][j][k].s + price(S, i) == j);
+            int index = Math.max(i-1, 0);
+            int taken = 0;
+
+            // (i-1)-th item was taken into set A if the transition
+            // used price of the item
+            boolean currentItemSelected = (path[i][j][k].s + price(S, index) == j);
             if (currentItemSelected) {
-                A.put(S.get(i).getKey(), S.get(i).getValue());
+                A.put(S.get(index).getKey(), S.get(index).getValue());
+                taken = 1;
             }
 
+            // proceed to the next state
             int newi = i - 1;
             int newj = path[i][j][k].s;
-            int newk = path[i][j][k].k;
+            int newk = k - taken;
 
             i = newi;
             j = newj;
             k = newk;
         }
 
+        // insert all the rest items into B
         for (var entry : S) {
             if (!A.containsKey(entry.getKey())) {
                 B.put(entry.getKey(), entry.getValue());
