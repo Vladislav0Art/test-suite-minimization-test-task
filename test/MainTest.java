@@ -66,8 +66,8 @@ class MainTest {
 
     @Test
     void splitTwoElements() {
-        var entryA = Map.entry("a", 10);
-        var entryB = Map.entry("b", 10);
+        var entryA = Map.entry("a", 1);
+        var entryB = Map.entry("b", 2);
 
         Map<String, Integer> S = Map.ofEntries(entryA, entryB);
 
