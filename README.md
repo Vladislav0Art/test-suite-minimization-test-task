@@ -82,7 +82,7 @@ Now the problem has the following formulation:
    1. `dp[0][0][0] = 1, path[0][0][0] = {0, 0}`
    2. `dp[0][price(0)][1] = 1, path[0][price(0)][1] = {0, 0}`
 
-
+**Asymptotic:** `O(n^2 * S)` where `n` is the size of `set` and `S` is the total sum of prices of all items of `set`. 
 
 The implementation is provided below and in the [Main](./src/Main.java) class.
 
